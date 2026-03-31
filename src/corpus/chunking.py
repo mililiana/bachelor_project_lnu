@@ -1,8 +1,11 @@
 import json
 import re
-from typing import List, Dict 
+import os
+from pathlib import Path
+from typing import List, Dict
 from loguru import logger
-import os  
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 class ImprovedChunking:
     
@@ -51,8 +54,8 @@ class ImprovedChunking:
         return result
     
     @staticmethod
-    def semantic_chunking(text: str, chunk_size: int = 128, 
-                         chunk_overlap: int = 30) -> List[str]:
+    def semantic_chunking(text: str, chunk_size: int = 110,
+                         chunk_overlap: int = 20) -> List[str]:
         sentences = re.split(r'(?<=[.!?])\s+', text.strip())
         
         if not sentences:
@@ -90,8 +93,8 @@ class ImprovedChunking:
         return chunks
 
 def main():
-    input_file_path = "/Users/lilianamirchuk/Desktop/bachelor_project/structure_data/meta_data_paraphrase_multilingual.json"
-    output_file_path = "/Users/lilianamirchuk/Desktop/bachelor_project/pipline1/chunked_documents_512.json"
+    input_file_path = str(PROJECT_ROOT / "data" / "meta_data_paraphrase_multilingual.json")
+    output_file_path = str(PROJECT_ROOT / "data" / "chunked_documents_512.json")
     
     logger.info(f"Starting chunking process from {input_file_path}...")
     

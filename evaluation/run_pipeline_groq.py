@@ -1,5 +1,6 @@
 import json
 import os
+from pathlib import Path
 from typing import Dict, List, Optional
 from loguru import logger
 from groq import Groq
@@ -7,9 +8,11 @@ import time
 import random
 from dotenv import load_dotenv
 
-from improved_hybrid_search import ImprovedHybridSearchEngine
-from llm1_enhanced import EnhancedLLMQueryAnalyzer
-from utils import save_results_to_json
+from evaluation.hybrid_search_enhanced import ImprovedHybridSearchEngine
+from evaluation.analyzer_groq import EnhancedLLMQueryAnalyzer
+from src.utils import save_results_to_json
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 load_dotenv()
 
@@ -250,15 +253,10 @@ def main():
     Batch process questions with improved RAG system using Groq
     """
     # Configuration
-    DB_PATH = "vector_db"
+    DB_PATH = str(PROJECT_ROOT / "vector_db")
     COLLECTION_NAME = "hybrid_collection"
-    QUESTIONS_FILE_PATH = (
-        "/Users/lilianamirchuk/Desktop/bachelor_project/evaluation/question_new_full.json"
-    )
-    RESULTS_OUTPUT_FILE = (
-        "/Users/lilianamirchuk/Desktop/bachelor_project/pipline_updated1_semantic_keywords_qroq/evaluation/"
-        "evaluation_results_groq_llama4.json"
-    )
+    QUESTIONS_FILE_PATH = str(PROJECT_ROOT / "evaluation" / "questions" / "question_new_full.json")
+    RESULTS_OUTPUT_FILE = str(PROJECT_ROOT / "evaluation" / "results" / "evaluation_results_groq.json")
     
     # Initialize improved RAG system
     logger.info("Initializing Improved RAG System with Groq...")

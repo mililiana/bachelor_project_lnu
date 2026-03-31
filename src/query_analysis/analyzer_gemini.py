@@ -1,7 +1,7 @@
-# pipline1/llm1.py
 import json
 import re
 import os
+from pathlib import Path
 from typing import List, Dict, Set, Optional
 from sentence_transformers import SentenceTransformer
 import chromadb
@@ -9,9 +9,11 @@ from loguru import logger
 import time
 import google.generativeai as genai
 from dotenv import load_dotenv
-from hybrid_search import HybridSearchEngine
-from utils import save_results_to_json
-from prompt.build_prompt import build_system_prompt
+from src.search.hybrid_search_basic import HybridSearchEngine
+from src.utils import save_results_to_json
+from src.prompts.build_prompt_basic import build_system_prompt
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 load_dotenv()
 
@@ -58,12 +60,10 @@ class LLMQueryAnalyzer:
 
 
 def main():
-    DB_PATH = "vector_db"
+    DB_PATH = str(PROJECT_ROOT / "vector_db")
     COLLECTION_NAME = "hybrid_collection"
-    QUESTIONS_FILE_PATH = (
-        "/Users/lilianamirchuk/Desktop/bachelor_project/evaluation/question.json"
-    )
-    RESULTS_OUTPUT_FILE = "evaluation/evaluation_results.json"
+    QUESTIONS_FILE_PATH = str(PROJECT_ROOT / "evaluation" / "questions" / "question.json")
+    RESULTS_OUTPUT_FILE = str(PROJECT_ROOT / "evaluation" / "results" / "evaluation_results.json")
     all_run_results = []
 
     analyzer = LLMQueryAnalyzer()

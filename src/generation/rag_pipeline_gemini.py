@@ -1,15 +1,17 @@
-# pipline1/complete_rag_system.py
 import json
 import os
+from pathlib import Path
 from typing import Dict, List, Optional
 from loguru import logger
 import google.generativeai as genai
 import time
 import random
 from dotenv import load_dotenv
-from hybrid_search_usekeywords import HybridSearchEngine
-from llm1 import LLMQueryAnalyzer
-from utils import save_results_to_json
+from src.search.hybrid_search_basic import HybridSearchEngine
+from src.query_analysis.analyzer_gemini import LLMQueryAnalyzer
+from src.utils import save_results_to_json
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 load_dotenv()
 
@@ -230,12 +232,10 @@ def main():
     Processes queries through complete RAG pipeline and saves results with answers
     """
     # Configuration (same as llm1.py)
-    DB_PATH = "vector_db"
+    DB_PATH = str(PROJECT_ROOT / "vector_db")
     COLLECTION_NAME = "hybrid_collection"
-    QUESTIONS_FILE_PATH = (
-        "/Users/lilianamirchuk/Desktop/bachelor_project/evaluation/question_full.json"
-    )
-    RESULTS_OUTPUT_FILE = "/Users/lilianamirchuk/Desktop/bachelor_project/evaluation/evaluation_results_with_answers_keywords.json"
+    QUESTIONS_FILE_PATH = str(PROJECT_ROOT / "evaluation" / "questions" / "question_full.json")
+    RESULTS_OUTPUT_FILE = str(PROJECT_ROOT / "evaluation" / "results" / "evaluation_results_with_answers.json")
     
     # Initialize RAG system
     logger.info("Initializing Complete RAG System...")

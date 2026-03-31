@@ -1,16 +1,30 @@
 # Core dependencies
 google-generativeai>=0.3.0
+groq>=0.4.0
 chromadb>=0.4.0
 sentence-transformers>=2.2.0
+
+# Local LLM (Lapa LLM v0.1.2)
+transformers>=4.45.0
+accelerate>=0.26.0
+torch>=2.1.0
 
 # Data processing
 pdfminer.six>=20231228
 openpyxl>=3.1.0
 pandas>=2.0.0
 
-# Evaluation
+# Evaluation (RAGAS uses OpenAI as LLM judge)
 ragas>=0.1.0
+openai>=1.0.0
+datasets>=2.14.0
+scipy>=1.11.0
+
+# Web server
+flask>=3.0.0
+flask-cors>=4.0.0
 
 # Utilities
 python-dotenv>=1.0.0
+loguru>=0.7.0
 tqdm>=4.65.0

@@ -1,86 +1,106 @@
 # University RAG System - Bachelor Thesis
 
-A Retrieval-Augmented Generation (RAG) system for university information retrieval, developed as part of a bachelor thesis comparing semantic search techniques.
+Intelligent search and navigation system for university information resources based on Retrieval-Augmented Generation (RAG). Developed as part of a bachelor thesis at the National University "Lviv Polytechnic" (NULP).
 
 ## Overview
 
-This project implements and compares two hybrid search configurations for a university information assistant:
-
-- **Configuration A**: Similarity-based semantic retrieval followed by keyword filtering (narrowing down concepts)
-- **Configuration B**: Keyword-based retrieval followed by semantic similarity filtering (contextualizing entities)
-
-The system provides an intelligent Q&A interface for university-related information at the National University "Lviv Polytechnic" (NULP).
+The system implements a hybrid search pipeline that combines semantic vector search with keyword-based retrieval to answer natural language questions about university information in Ukrainian. Three document ranking methods are compared: deterministic keyword boosting, XNet neural reranker, and KAN (Kolmogorov-Arnold Network) reranker.
 
 ## Project Structure
 
+The codebase is organized to mirror the thesis chapters:
+
 ```
-├── src/                                # Source code
-│   ├── data_processing/                # Data collection & processing scripts
-│   │   ├── chunk.py                    # Document chunking with semantic splitting
-│   │   └── create_and_save_embeddings.py
+bachelor_project_lnu/
+├── src/
+│   ├── corpus/                        # Document corpus formation
+│   │   ├── chunking.py                #   Semantic text chunking (110 tokens, 20 char overlap)
+│   │   └── embeddings.py              #   Vectorization with paraphrase-multilingual-mpnet-base-v2
 │   │
-│   ├── technique_1_basic/              # Configuration A: Semantic First → Keyword Filtering
-│   │   ├── llm1.py                     # Query analysis with Gemini
-│   │   ├── hybrid_search.py            # Semantic search with keyword boosting
-│   │   ├── vector_search_engine.py     # Vector DB interface
-│   │   ├── complete_rag_system.py      # Full RAG pipeline
-│   │   └── prompt/                     # System prompts
+│   ├── search/                        # Search architecture & ranking
+│   │   ├── vector_search.py           #   ChromaDB vector search interface
+│   │   └── hybrid_search_basic.py     #   Hybrid search: semantic + keyword boosting
 │   │
-│   └── technique_2_enhanced/           # Configuration B: Keyword First → Semantic Filtering
-│       ├── llm1_enhanced.py            # Enhanced query analysis with type classification
-│       ├── improved_hybrid_search.py   # Keyword retrieval with semantic re-ranking
-│       ├── improved_complete_rag_system.py
-│       └── prompt/                     # Enhanced system prompts
+│   ├── query_analysis/                # Query understanding & intent detection
+│   │   └── analyzer_gemini.py         #   Query analyzer using Google Gemini Flash
+│   │
+│   ├── generation/                    # Answer generation module
+│   │   ├── rag_pipeline_gemini.py     #   Full RAG pipeline with Gemini (cloud)
+│   │   └── lapa_llm.py               #   Local Lapa LLM v0.1.2 wrapper (12B, GPU)
+│   │
+│   ├── research/                      # Neural reranker models & metrics
+│   │   ├── kan_model.py               #   KAN with B-spline learnable activations
+│   │   ├── xnet_model.py              #   XNet with Cauchy activation function
+│   │   └── ranking_metrics.py         #   NDCG@k, MRR, MAP, ERR@k metrics
+│   │
+│   ├── prompts/                       # System prompts for query analysis
+│   │   ├── build_prompt_basic.py
+│   │   └── system_prompt_base.txt
+│   │
+│   └── utils.py
 │
-├── data/                               # Processed data
-│   ├── processed_documents/            # Cleaned text files (25 documents)
-│   ├── chunked_documents.json          # Document chunks (128 tokens)
-│   └── chunked_documents_512.json      # Document chunks (512 tokens)
+├── web/                               # Web interface
+│   ├── index.html                     #   Demo page for local testing
+│   ├── widget.js                      #   Chat widget (injectable into any page)
+│   └── widget.css                     #   Widget styles
 │
-├── vector_db/                          # ChromaDB vector database
+├── app.py                             # Flask backend (connects widget to RAG pipeline)
 │
-├── evaluation/                         # Evaluation scripts and results
-│   ├── questions/                      # Test question sets (30 queries)
-│   └── results/                        # Evaluation metrics
+├── evaluation/                        # Experiments & results
+│   ├── ragas_evaluation.py            #   RAGAS metrics evaluation (OpenAI as judge)
+│   ├── reranker_cv.py                 #   5-fold CV for KAN vs XNet vs baselines
+│   ├── statistical_tests.py           #   Wilcoxon signed-rank test
+│   ├── training_data_balanced.csv     #   Labeled training data for rerankers
+│   ├── run_pipeline_groq.py           #   Alternative pipeline for evaluation experiments
+│   ├── analyzer_groq.py               #   Groq-based query analyzer (evaluation only)
+│   ├── hybrid_search_enhanced.py      #   Enhanced search variant (evaluation only)
+│   ├── build_prompt_enhanced.py       #   Enhanced prompt builder (evaluation only)
+│   ├── system_prompt_enhanced.txt     #   Enhanced system prompt (evaluation only)
+│   ├── questions/                     #   110 validated test queries (5 categories)
+│   └── results/                       #   RAGAS evaluation metrics & pipeline outputs
 │
-├── plots/                              # Thesis figures and plots
+├── models/                            # Trained model checkpoints
+│   ├── kan_model.pth                  #   KAN reranker weights
+│   ├── xnet_model.pth                 #   XNet reranker weights
+│   └── mlp_model.pth                  #   MLP baseline weights
 │
-└── docs/                               # Documentation
-    └── Chapter_Research_Implementation.md
+├── config/
+│   └── vector_db_metadata_cache.json  # Categories & titles for prompt building
+│
+├── data/
+│   ├── processed_documents/           # 50+ cleaned university documents
+│   ├── chunked_documents.json         # Document chunks
+│   └── chunked_documents_128.json
+│
+├── vector_db/                         # ChromaDB persistent storage
+├── plots/                             # Thesis figures
+└── docs/                              # Additional documentation
 ```
 
-## Key Features
+## Thesis Chapter Mapping
 
-### Configuration A: Similarity First → Keyword Filtering
-- **Stage 1**: Semantic search retrieves conceptually similar documents
-- **Stage 2**: Keyword boosting refines and prioritizes results
-- Query embedding using `paraphrase-multilingual-mpnet-base-v2`
-- Optimal for queries requiring semantic understanding
-- Example: "How do students connect to university Wi-Fi?"
-
-### Configuration B: Keyword First → Semantic Filtering
-- **Stage 1**: Keyword-based retrieval finds documents with exact terms
-- **Stage 2**: Semantic similarity re-ranks for contextual relevance
-- **Query Type Classification**: Single, List, or Count queries
-- **Adaptive Context Selection**: 5-15 documents based on query type
-- Optimal for specific entity queries (e.g., building numbers, institute names)
-- Example: "Where is building 19?"
-
-## Data Sources
-
-The knowledge base contains 50+ documents including:
-- Institutional information (institutes, departments)
-- Regulatory documents (university codes, policies)
-- Student services (scholarships, student cards, dining)
-- Academic programs (Erasmus+, double degrees)
-- Campus infrastructure (building addresses, facilities)
+| Directory | Thesis Section | Description |
+|-----------|---------------|-------------|
+| `src/corpus/` | Data collection, preprocessing, chunking, vectorization |
+| `src/search/` | Search architecture, hybrid ranking methods |
+| `src/query_analysis/` | Query understanding and intent detection |
+| `src/generation/` | Answer generation (Gemini cloud + Lapa local) |
+| `src/research/` | Neural rerankers: KAN (B-spline) & XNet (Cauchy) |
+| `src/prompts/` | System prompts for LLM-based query analysis |
+| `web/` + `app.py` | Web interface prototype (Flask + chat widget) |
+| `evaluation/` | RAGAS evaluation, reranker CV, Wilcoxon tests |
 
 ## Technologies
 
-- **Embedding Model**: `paraphrase-multilingual-mpnet-base-v2` (multilingual support)
-- **Vector Database**: ChromaDB with cosine similarity
-- **LLM**: Google Gemini Flash (query analysis and answer generation)
-- **Evaluation**: RAGAS metrics (faithfulness, answer relevancy, context precision/recall)
+| Component | Technology |
+|-----------|-----------|
+| Embedding model | `paraphrase-multilingual-mpnet-base-v2` |
+| Vector database | ChromaDB (cosine similarity, HNSW index) |
+| Cloud LLM | Google Gemini Flash (query analysis + answer generation) |
+| Local LLM | Lapa LLM v0.1.2 (Gemma3-based, 12B params) |
+| Web interface | Flask + vanilla JS/CSS widget (CORS-enabled) |
+| Evaluation | RAGAS with OpenAI judge + Wilcoxon statistical test |
+| GPU | NVIDIA RTX 4090 (24GB VRAM) via Vast.ai |
 
 ## Installation
 
@@ -88,22 +108,69 @@ The knowledge base contains 50+ documents including:
 pip install -r requirements.txt
 ```
 
-Required API key:
-- `GOOGLE_API_KEY` for Gemini Flash
+Copy `.env.example` to `.env` and set:
+- `GOOGLE_API_KEY` — for Gemini Flash (main pipeline)
+- `OPENAI_API_KEY` — for RAGAS evaluation (LLM judge)
+- `GROQ_API_KEY` — optional, for evaluation experiments only
 
-## Evaluation
+## Usage
 
-The system was evaluated on 30 test queries across 5 categories:
-1. Navigation and Infrastructure
-2. Educational process and academic rules
-3. Scholarships
-4. Student Services, Events and Organizations
-5. Structure and Institutions
+### Run the web interface (recommended for testing)
 
-## License
+Start the Flask backend which serves the chat widget and connects it to the RAG pipeline:
 
-This project was developed as part of a bachelor thesis at the National University "Lviv Polytechnic".
+```bash
+# Using Gemini pipeline (cloud, default)
+python app.py
+
+# Using local Lapa LLM (requires GPU)
+python app.py --pipeline lapa
+
+# Custom port
+python app.py --port 8080
+```
+
+Then open http://localhost:5001 in your browser. The chat widget appears in the bottom-right corner — type a question in Ukrainian and get answers from the university knowledge base.
+
+### Run RAGAS evaluation
+
+```bash
+# Evaluate existing pipeline results
+python -m evaluation.ragas_evaluation
+
+# Evaluate a specific results file
+python -m evaluation.ragas_evaluation --input results/eval_semantic_key_all.json
+
+# Run the pipeline first, then evaluate
+python -m evaluation.ragas_evaluation --run-pipeline
+```
+
+### Run reranker cross-validation (KAN vs XNet vs baselines)
+
+```bash
+python -m evaluation.reranker_cv
+```
+
+### Run Wilcoxon statistical test
+
+```bash
+# Compare two ranking methods
+python -m evaluation.statistical_tests \
+    --baseline evaluation/results/ragas_scores_baseline.json \
+    --improved evaluation/results/ragas_scores_kan.json
+```
+
+### Embedding the widget into any webpage
+
+The widget in `web/widget.js` is designed to be injected into any page (e.g. the university website). Just include the script tag:
+
+```html
+<script src="widget.js"></script>
+```
+
+It will automatically create the chat UI and send requests to `http://localhost:5001/ask`.
 
 ## Author
 
 Liliana Mirchuk
+Lviv Polytechnic National University, 2026

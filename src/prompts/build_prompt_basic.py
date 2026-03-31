@@ -2,7 +2,7 @@ import json
 import os
 
 BASE_PROMPT_PATH = os.path.join(os.path.dirname(__file__), "system_prompt_base.txt")
-METADATA_CACHE_PATH = "/Users/lilianamirchuk/Desktop/bachelor_project/pipline1/prompt/vector_db_metadata_cache.json"   
+METADATA_CACHE_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'vector_db_metadata_cache.json')
 
 
 def extract_metadata_for_prompt():

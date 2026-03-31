@@ -4,7 +4,7 @@ from typing import Dict
 from loguru import logger
 from groq import Groq
 from dotenv import load_dotenv
-from prompt.build_prompt_enhanced import build_enhanced_system_prompt
+from evaluation.build_prompt_enhanced import build_enhanced_system_prompt
 
 load_dotenv()
 

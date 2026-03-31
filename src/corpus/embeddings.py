@@ -1,7 +1,10 @@
 import json
+from pathlib import Path
 from loguru import logger
 import chromadb
 from sentence_transformers import SentenceTransformer
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def main(input_file: str, collection_name: str, db_path: str):
@@ -35,8 +38,9 @@ def main(input_file: str, collection_name: str, db_path: str):
 
         cache_data = {"categories": categories, "titles": titles}
 
+        cache_path = str(PROJECT_ROOT / "config" / "vector_db_metadata_cache.json")
         with open(
-            "/Users/lilianamirchuk/Desktop/bachelor_project/pipline1/prompt/vector_db_metadata_cache.json",
+            cache_path,
             "w",
             encoding="utf-8",
         ) as f:
@@ -85,9 +89,9 @@ def main(input_file: str, collection_name: str, db_path: str):
 
 
 if __name__ == "__main__":
-    INPUT_FILE = "/Users/lilianamirchuk/Desktop/bachelor_project/pipline1/chunked_documents_512.json"
+    INPUT_FILE = str(PROJECT_ROOT / "data" / "chunked_documents.json")
     COLLECTION_NAME = "hybrid_collection"
-    DB_PATH = "vector_db"
+    DB_PATH = str(PROJECT_ROOT / "vector_db")
 
     logger.info("Starting embedding ingestion with hardcoded parameters...")
     main(input_file=INPUT_FILE, collection_name=COLLECTION_NAME, db_path=DB_PATH)
